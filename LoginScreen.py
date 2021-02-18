@@ -1,6 +1,7 @@
 import tkinter
 from openpyxl.workbook import Workbook
 from openpyxl import load_workbook
+import openpyxl
 
 # Designing window for login
 def login_screen_function():
@@ -31,8 +32,10 @@ def login_screen_function():
     password_entry.place(x=90, y=92)
 
     login_button = tkinter.Button(login_screen, text='Login', width=7, command=login_function)
-    login_button.place(x=150, y=140, anchor='center')
+    login_button.place(x=90, y=150, anchor='center')
 
+    return_button = tkinter.Button(login_screen, text='Return', width=7, command=return_login_function)
+    return_button.place(x=215, y=150, anchor='center')
 
 # Designing window for registration
 def register_screen_function():
@@ -70,7 +73,25 @@ def register_screen_function():
     confirmation_entry.place(x=100, y=132)
 
     register_button = tkinter.Button(register_screen, text='Register', width=7, command=register_function)
-    register_button.place(x=150, y=180, anchor='center')
+    register_button.place(x=90, y=190, anchor='center')
+
+    return_button = tkinter.Button(register_screen, text='Return', width=7, command=return_register_function)
+    return_button.place(x=215, y=190, anchor='center')
+
+
+# Designing window for after login
+def main_program_screen_function():
+    global main_program_screen
+
+    main_program_screen = tkinter.Toplevel()
+    main_program_screen.geometry('300x300')
+    main_program_screen.title('Main Program')
+
+    label = tkinter.Label(main_program_screen, text='Welcome to ...')
+    label.place(x=150, y=100, anchor='center')
+
+    button = tkinter.Button(main_program_screen, text='Close Program', command=close_main_program_function)
+    button.place(x=150, y=200, anchor='center')
 
 
 # Implementing event on register button
@@ -93,14 +114,19 @@ def register_function():
         if password != confirmation:
             error_password_match_function()
         else:
-            # Create workbook instance
-            wb = Workbook()
-            # Load existing workbook
-            wb = load_workbook('LoginData.xlsx')
-            # Create active worksheet
-            ws = wb.active
-            pos = str(ws.max_row + 1)
-            print(pos)
+            try:
+                # Create workbook instance
+                wb = Workbook()
+                # Load existing workbook
+                wb = load_workbook('LoginData.xlsx')
+                # Create active worksheet
+                ws = wb.active
+                pos = str(ws.max_row + 1)
+            except:
+                wb = Workbook()
+                wb.save('LoginData.xlsx')
+                ws = wb.active
+                pos = str(ws.max_row)
             ws['A' + pos] = username
             ws['B' + pos] = password
             wb.save('LoginData.xlsx')
@@ -157,16 +183,29 @@ def username_validator():
     global username_entry
 
     username = username_entry.get().lower()
+    try:
+        wb = Workbook()
+        wb = load_workbook('LoginData.xlsx')
+        ws = wb.active
+        max = ws.max_row + 1
+        for cell in range(1, max):
+            pos = str(cell)
+            if ws['A' + pos].value == username:
+                return True
+        return False
+    except:
+        return False
 
-    wb = Workbook()
-    wb = load_workbook('LoginData.xlsx')
-    ws = wb.active
-    max = ws.max_row + 1
-    for cell in range(1, max):
-        pos = str(cell)
-        if ws['A' + pos].value == username:
-            return True
-    return False
+
+# Function to return from login
+def return_login_function():
+    login_screen.destroy()
+    main_screen_function()
+
+# Function to return from register
+def return_register_function():
+    register_screen.destroy()
+    main_screen_function()
 
 
 # Designing popup for successful login
@@ -271,7 +310,7 @@ def destroy_error_password_function():
 def destroy_login_success_screen_function():
     login_success_screen.destroy()
     login_screen.destroy()
-    main_screen_function()
+    main_program_screen_function()
 
 
 def destroy_register_success_screen_function():
@@ -287,6 +326,11 @@ def destroy_error_password_match_function():
 def destroy_error_blank_field_function():
     error_blank_field.destroy()
 
+
+#Closing Main program
+def close_main_program_function():
+    main_program_screen.destroy()
+    quit()
 
 # Designing window for main (first) screen
 def main_screen_function():
